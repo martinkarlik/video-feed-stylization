@@ -2,9 +2,12 @@ import cv2
 import numpy as np
 import requests
 from urllib.request import urlopen
+import os
+import re
 
-INPUT_VIDEO_PATH = "input_feed/havnegade_cut1.mp4"
-OUTPUT_VIDEO_PATH = "output_feed/cartoon_havnegade.avi"
+INPUT_DIR_PATH = "input_feed"
+OUTPUT_DIR_PATH = "output_feed"
+
 
 
 def transfer_style(source):
@@ -54,36 +57,40 @@ def apply_watercolor(target):
 
 
 def main():
-    input_feed = cv2.VideoCapture(INPUT_VIDEO_PATH)
-    fps = input_feed.get(cv2.CAP_PROP_FPS)
-    frame_count = input_feed.get(cv2.CAP_PROP_FRAME_COUNT)
-    frame_size = None
+    for filename in os.listdir("input_feed"):
+        input_filepath = os.path.join(INPUT_DIR_PATH, filename)
 
-    out = None
+        print("Processing {}".format(input_filepath))
 
-    index = 0.0
-    while input_feed.isOpened():
-        _, frame = input_feed.read()
-        if frame is None or cv2.waitKey(int(1 / fps * 1000)) & 0xFF == ord('q'):
-            break
+        input_feed = cv2.VideoCapture(input_filepath)
+        fps = input_feed.get(cv2.CAP_PROP_FPS)
+        frame_count = input_feed.get(cv2.CAP_PROP_FRAME_COUNT)
+        frame_size = None
 
-        stylized_frame = apply_cartoon(frame)
+        out = None
 
-        if frame_size is None:
-            frame_size = (stylized_frame.shape[1], stylized_frame.shape[0])
-            out = cv2.VideoWriter(OUTPUT_VIDEO_PATH, cv2.VideoWriter_fourcc(*'DIVX'), 24, frame_size)
+        index = 0.0
+        while input_feed.isOpened():
+            _, frame = input_feed.read()
+            if frame is None or cv2.waitKey(int(1 / fps * 1000)) & 0xFF == ord('q'):
+                break
 
-        out.write(stylized_frame)
+            stylized_frame = apply_cartoon(frame)
 
-        index += 1
-        print("{} / {} {:10.2f}%".format(index, frame_count, index / frame_count * 100))
+            if frame_size is None:
+                frame_size = (stylized_frame.shape[1], stylized_frame.shape[0])
+                output_filepath = os.path.join(OUTPUT_DIR_PATH, re.split('[.]', filename)[0]) + "_modified.avi"
+                out = cv2.VideoWriter(output_filepath, cv2.VideoWriter_fourcc(*'DIVX'), 24, frame_size)
 
-    out.release()
-    input_feed.release()
+            out.write(stylized_frame)
 
-    cv2.destroyAllWindows()
+            index += 1
+            print("{} / {} {:10.2f}%".format(index, frame_count, index / frame_count * 100))
 
-    print("Frame size: {}".format(frame_size))
+        out.release()
+        input_feed.release()
+
+        cv2.destroyAllWindows()
 
 
 main()
