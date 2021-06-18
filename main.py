@@ -56,7 +56,7 @@ def apply_watercolor(target):
     return cv2.stylization(target, sigma_s=60, sigma_r=0.6)
 
 
-def main():
+def stylize_video_feed():
     for filename in os.listdir("input_feed"):
         input_filepath = os.path.join(INPUT_DIR_PATH, filename)
 
@@ -93,4 +93,5 @@ def main():
         cv2.destroyAllWindows()
 
 
-main()
+if __name__ == "__main__":
+    stylize_video_feed()
