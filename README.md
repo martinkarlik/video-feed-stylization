@@ -1,2 +1,2 @@
-# video-feed-stylization
+# Introduction
 Short python script for stylizing video feed.
